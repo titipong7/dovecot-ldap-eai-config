@@ -1,0 +1,18 @@
+uris = ldaps://ldap.kon.in.th
+dn = cn=radmin,dc=eai,dc=th
+dnpass = 3T7w2Mpwex3gzxNe
+ldap_version = 3
+base = ou=people,ou=kon.in.th,ou=domains,dc=eai,dc=th
+scope = subtree
+auth_bind = yes
+blocking = yes
+
+
+user_filter = (&(objectClass=cfmail)(uid=%u))
+#user_filter = (&(objectClass=cfmail)(uid=%u)), (&(objectClass=cfmail)(uid=canoEmail))
+user_attrs = homeDirectory=home/vmail/%d/%n/Maildir, quota=quota_rule=*:bytes=%$k
+pass_attrs = email=user, userPassword=password
+#pass_attrs = (|(email=user)(canoEmail=user)), userPassword=password
+#pass_filter = (&(objectClass=cfMail)(email=%u))
+
+pass_filter = (|(&(objectClass=cfMail)(email=%u))(&(objectClass=cfMail)(canoEmail=%u)))

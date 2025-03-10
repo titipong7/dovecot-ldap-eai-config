@@ -1,0 +1,457 @@
+https://medium.com/@redswitches/how-to-enable-selinux-in-centos-8-d6b64e51a9ac
+https://docs.oracle.com/en/operating-systems/oracle-linux/selinux/selinux-CustomizingSELinuxPolicies.html
+
+netcat
+https://www.digitalocean.com/community/tutorials/how-to-use-netcat-to-establish-and-test-tcp-and-udp-connections#how-to-use-netcat-for-port-scanning
+
+watch
+https://www.geeksforgeeks.org/watch-command-in-linux-with-examples/
+
+bmon
+https://askubuntu.com/questions/257263/how-to-display-network-traffic-in-the-terminal
+
+
+https://shoreup.co.uk/two-way-dovecot-server-replication/
+https://jarasyola.blogspot.com/2016/09/replicating-emails-between-two-mail.html
+https://doc.dovecot.org/2.3/configuration_manual/dovecot_ssl_configuration/
+https://dovecot.org/list/dovecot/2017-January/106784.html
+
+11:32 TNS Monitoring https://technicalsupport.ais.co.th/help/dashboard
+11:34 TNS Monitoring User : thainsnoc
+Pass : BP114539@2022Dec02
+
+ncsa
+https://ncsa-thailand.kb.ap-southeast-1.aws.found.io/login?next=%2Fapp%2Fsecurity%2Fget_started&msg=SESSION_EXPIRED#alerts
+https://x.com/CyberTestSystem
+https://docs.google.com/spreadsheets/d/1YFDIviFFgnjDzHgbjzd4Uwpm6MrYfv-w1XCnBmJlFSg/edit?gid=2123676373#gid=2123676373
+
+
+openssl s_client -servername mail2.kon.in.th -connect mail2.kon.in.th:imaps
+
+https://linuxize.com/post/check-listening-ports-linux/
+sudo ss -tunlp
+sudo netstat -tunlp
+https://doc.dovecot.org/2.3/configuration_manual/replication/
+https://jarasyola.blogspot.com/2016/09/replicating-emails-between-two-mail.html
+
+
+$ ldapsearch -H ldaps://ldap.kon.in.th -D "cn=radmin,dc=eai,dc=th" -w "3T7w2Mpwex3gzxNe" -LLL -b "ou=people,ou=kon.in.th,ou=domains,dc=eai,dc=th" -s sub mobile=0829882962
+
+$ sudo ssh -p 11022 -i /home/vmail/.ssh/tanagan-private-key-ssh-nopass.pem mail1.kon.in.th
+$ sudo ssh -p 22 -l vmail -i /home/vmail/.ssh/tanagan-private-key-ssh-nopass.pem mail2.kon.in.th
+
+
+# semanage port -a -t mail_port_t -p tcp 12345
+where PORT_TYPE is one of the following: lmtp_port_t, mail_port_t, pop_port_t, sieve_port_t, smtp_port_t.
+
+$ sudo ausearch -c 'dovecot' --raw | audit2allow -M my-dovecot
+$ sudo semodule -X 300 -i my-dovecot.pp
+
+sudo doveadm replicator dsync-status
+sudo doveadm replicator status
+sudo doveadm force-resync -u rongrat@kon.in.th
+sudo doveadm replicator replicate -f nipha@kon.in.th
+sudo  doveadm -D sync -u titipong@kon.in.th -d -N -l 30 -U
+
+- name: Allow nis to enabled
+  command: semanage boolean -m --on nis_enabled
+
+- name: Allow virt to sandbox use all caps
+  command: semanage boolean -m --on virt_sandbox_use_all_caps
+
+- name: Allow virt to use nfs
+  command: semanage boolean -m --on virt_use_nfs
+
+- name: Set up port customizations
+  shell: |
+    semanage port -D
+    semanage port -a -t mail_port_t -r 's0' -p tcp 12345
+    semanage port -a -t ssh_port_t -r 's0' -p tcp 52522
+
+
+$ dovecot --version
+2.3.16 (7e2e900c1a)
+
+$ sudo tail -f /var/log/maillog
+$ sudo tail -f /var/log/firewalld
+## 2023-01-10 13:20:43 WARNING: AllowZoneDrifting is enabled. This is considered an insecure configuration option. It will be removed in a future release. Please consider disabling it now.
+
+$ sudo systemctl start firewalld.service 
+$ sudo systemctl status firewalld.service 
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: inactive (dead) since Thu 2025-03-06 11:21:19 +07; 3s ago
+     Docs: man:firewalld(1)
+  Process: 824 ExecStart=/usr/sbin/firewalld --nofork --nopid $FIREWALLD_ARGS (code=exited, status=0/SUCCESS)
+ Main PID: 824 (code=exited, status=0/SUCCESS)
+
+Mar 06 11:06:56 mail2.kon.in.th systemd[1]: Starting firewalld - dynamic firewall daemon...
+Mar 06 11:06:58 mail2.kon.in.th systemd[1]: Started firewalld - dynamic firewall daemon.
+Mar 06 11:14:36 mail2.kon.in.th firewalld[824]: WARNING: AllowZoneDrifting is enabled. This is considered an insec>
+Mar 06 11:21:19 mail2.kon.in.th systemd[1]: Stopping firewalld - dynamic firewall daemon...
+Mar 06 11:21:19 mail2.kon.in.th systemd[1]: firewalld.service: Succeeded.
+Mar 06 11:21:19 mail2.kon.in.th systemd[1]: Stopped firewalld - dynamic firewall daemon.
+
+$ sudo systemctl status firewalld.service 
+● firewalld.service - firewalld - dynamic firewall daemon
+   Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+   Active: active (running) since Thu 2025-03-06 11:39:06 +07; 1s ago
+     Docs: man:firewalld(1)
+ Main PID: 16189 (firewalld)
+    Tasks: 2 (limit: 203820)
+   Memory: 33.8M
+   CGroup: /system.slice/firewalld.service
+           └─16189 /usr/libexec/platform-python -s /usr/sbin/firewalld --nofork --nopid
+
+Mar 06 11:39:06 mail2.kon.in.th systemd[1]: Starting firewalld - dynamic firewall daemon...
+Mar 06 11:39:06 mail2.kon.in.th systemd[1]: Started firewalld - dynamic firewall daemon.
+
+$ sudo firewall-cmd --state 
+running
+
+$ sudo firewall-cmd --reload
+success
+
+## Set AllowZoneDrifting to Defaults
+No. That is a good question. You can disable it in /etc/firewalld/firewalld.conf. Search for AllowZoneDrifting in this conf and change yes to no.
+65 # AllowZoneDrifting
+66 # Older versions of firewalld had undocumented behavior known as "zone
+67 # drifting". This allowed packets to ingress multiple zones - this is a
+68 # violation of zone based firewalls. However, some users rely on this behavior
+69 # to have a "catch-all" zone, e.g. the default zone. You can enable this if you
+70 # desire such behavior. It's disabled by default for security reasons.
+71 # Note: If "yes" packets will only drift from source based zones to interface
+72 # based zones (including the default zone). Packets never drift from interface
+73 # based zones to other interfaces based zones (including the default zone).
+74 # Possible values; "yes", "no". Defaults to "yes".
+75 AllowZoneDrifting=yes
+
+[titipong@mail ~]$ sudo firewall-cmd --get-active-zones 
+dmz
+  interfaces: ens192
+public
+  interfaces: ens224
+
+[titipong@mail ~]$ sudo firewall-cmd --list-all 
+dmz (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens192
+  sources: 
+  services: imaps managesieve smtp smtp-submission smtps
+  ports: 
+  protocols: 
+  forward: no
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+
+$  sudo firewall-cmd --list-all --zone=internal 
+internal (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens224
+  sources: 
+  services: cockpit dhcpv6-client imap imaps mdns samba-client smtp smtps ssh syslog syslog-tls
+  ports: 12345/tcp 10050/tcp 10051/tcp 6514/tcp 11022/tcp
+  protocols: 
+  forward: no
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+
+$ sudo firewall-cmd --permanent --change-interface=ens224 --zone=internal 
+The interface is under control of NetworkManager, setting zone to 'internal'.
+success
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent --change-interface=ens192 --zone=public
+The interface is under control of NetworkManager, setting zone to 'public'.
+success
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=managesieve --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=smtp-submission --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-service=cockpit --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-service=syslog --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-service=syslog-tls --zone=public
+success
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.78.14/32" port protocol="tcp" port="11022" accept' --zone=public
+[titipong@mail ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.78.4/32" port protocol="tcp" port="11022" accept' --zone=public
+[titipong@mail ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.78.14/32" port protocol="tcp" port="12345" accept' --zone=public
+[titipong@mail ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.78.4/32" port protocol="tcp" port="12345" accept' --zone=public
+
+$ sudo firewall-cmd --permanent --remove-port=24/tcp --zone=public
+$ sudo firewall-cmd --permanent --remove-port=10050/tcp --zone=public
+$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="12345" accept' --zone=public
+$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="11022" accept' --zone=public
+$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="22" accept' --zone=public
+$ sudo firewall-cmd --permanent  --remove-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="22" accept' --zone=public
+
+
+[titipong@mail ~]$  sudo firewall-cmd --list-all --zone=public 
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens192
+  sources: 
+  services: dhcpv6-client imap imaps managesieve smtp smtp-submission smtps ssh
+
+  ports: 12345/tcp 24/tcp 11022/tcp 10050/tcp
+  ports: 
+  protocols: 
+  forward: no
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+        rule family="ipv4" source address="203.159.78.14/32" port port="11022" protocol="tcp" accept
+        rule family="ipv4" source address="203.159.78.4/32" port port="12345" protocol="tcp" accept
+        rule family="ipv4" source address="203.159.78.14/32" port port="12345" protocol="tcp" accept
+        rule family="ipv4" source address="203.159.78.4/32" port port="11022" protocol="tcp" accept
+
+
+[titipong@mail ~]$ 
+$ sudo cat /etc/firewalld/zones/public.xml
+<?xml version="1.0" encoding="utf-8"?>
+<zone>
+  <short>Public</short>
+  <description>For use in public areas. You do not trust the other computers on networks to not harm your computer. Only selected incoming connections are accepted.</description>
+  <service name="dhcpv6-client"/>
+  <service name="smtp"/>
+  <service name="smtps"/>
+  <service name="imap"/>
+  <service name="imaps"/>
+  <service name="ssh"/>
+  <service name="managesieve"/>
+  <port port="12345" protocol="tcp"/>
+  <port port="11022" protocol="tcp"/>
+  <rule family="ipv4">
+    <source address="203.159.78.14/32"/>
+    <port port="11022" protocol="tcp"/>
+    <accept/>
+  </rule>
+  <rule family="ipv4">
+    <source address="203.159.78.14/32"/>
+    <port port="12345" protocol="tcp"/>
+    <accept/>
+  </rule>
+</zone>
+
+
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --add-service=managesieve --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --add-service=smtp-submission --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --remove-port=24/tcp --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --reload 
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --remove-port=10050/tcp --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="12345" accept' --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="11022" accept' --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --reload 
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --remove-port=11022/tcp --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent --remove-port=12345/tcp --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --reload 
+success
+[titipong@mail2 ~]$  sudo firewall-cmd --permanent  --remove-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="11022" accept' --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --permanent  --add-rich-rule='rule family="ipv4" source address="203.159.70.227/32" port protocol="tcp" port="22" accept' --zone=public
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --reload 
+success
+[titipong@mail2 ~]$ sudo firewall-cmd --list-all --zone=public
+public (active)
+  target: default
+  icmp-block-inversion: no
+  interfaces: ens19
+  sources: 
+  services: cockpit imap imaps managesieve smtp smtp-submission smtps snmp ssh
+  ports: 
+  protocols: 
+  forward: no
+  masquerade: no
+  forward-ports: 
+  source-ports: 
+  icmp-blocks: 
+  rich rules: 
+        rule family="ipv4" source address="203.159.70.227/32" port port="22" protocol="tcp" accept
+        rule family="ipv4" source address="203.159.70.227/32" port port="12345" protocol="tcp" accept
+
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-port=11022/tcp --zone=public
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-port=12345/tcp --zone=public
+
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=imap --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=imaps --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=smtp --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=smtps --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=systlog --zone=internal
+Error: INVALID_SERVICE: 'systlog' not among existing services
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=syslog --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-service=syslog-tls --zone=internal
+success
+$ sudo firewall-cmd --permanent --add-port=12345/tcp --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-port=10050/tcp --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-port=10051/tcp --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-port=6514/tcp --zone=internal
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --add-port=11022/tcp --zone=internal
+success
+
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-port=6514/tcp --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-port=10050/tcp --zone=public
+success
+[titipong@mail ~]$ sudo firewall-cmd --permanent --remove-port=10051/tcp --zone=public
+success
+
+services: cockpit dhcpv6-client                       ssh mdns samba-client 
+services: cockpit dhcpv6-client imap imaps smtp smtps ssh syslog syslog-tls
+services: cockpit dhcpv6-client imap imaps mdns smtp smtps ssh syslog syslog-tls samba-client 
+
+ports: 12345/tcp 10050/tcp 10051/tcp 6514/tcp 11022/tcp
+
+
+
+[titipong@mail2 ~]$ sudo firewall-cmd --get-active-zones 
+dmz
+  interfaces: ens18
+public
+  interfaces: ens19
+
+
+$ telnet mail1.kon.in.th 12345
+Trying 203.159.70.227...
+Connected to mail1.kon.in.th.
+Escape character is '^]'.
+^]
+telnet> q
+Connection closed.
+
+$ telnet mail1.kon.in.th 11022
+Trying 203.159.70.227...
+Connected to mail1.kon.in.th.
+Escape character is '^]'.
+SSH-2.0-OpenSSH_8.0
+^]
+telnet> q
+Connection closed.
+
+[root@mail2 ~]# sudo doveadm replicator status
+Queued 'sync' requests        0                                             
+Queued 'high' requests        0                                             
+Queued 'low' requests         0                                             
+Queued 'failed' requests      1                                             
+Queued 'full resync' requests 4647                                          
+Waiting 'failed' requests     402                                           
+Total number of known users   5153
+[root@mail2 ~]# sudo doveadm replicator status
+Queued 'sync' requests        0                                             
+Queued 'high' requests        0                                             
+Queued 'low' requests         0                                             
+Queued 'failed' requests      0                                             
+Queued 'full resync' requests 4647                                          
+Waiting 'failed' requests     403                                           
+Total number of known users   5153 
+[root@mail2 ~]# doveadm replicator status
+Queued 'sync' requests        0                                             
+Queued 'high' requests        0                                             
+Queued 'low' requests         0                                             
+Queued 'failed' requests      0                                             
+Queued 'full resync' requests 4114                                          
+Waiting 'failed' requests     403                                           
+Total number of known users   5153  
+[titipong@mail2 ~]$  sudo doveadm replicator status
+Queued 'sync' requests        0                                                                                                                     
+Queued 'high' requests        0                                                                                                                     
+Queued 'low' requests         0                                                                                                                     
+Queued 'failed' requests      4                                                                                                                     
+Queued 'full resync' requests 2939                                                                                                                  
+Waiting 'failed' requests     500                                                                                                                   
+Total number of known users   5157
+sudo doveadm replicator status
+[titipong@mail2 ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                                              
+Queued 'high' requests        0                                                              
+Queued 'low' requests         0                                                              
+Queued 'failed' requests      8                                                              
+Queued 'full resync' requests 1459                                                           
+Waiting 'failed' requests     457                                                            
+Total number of known users   5158 
+
+[titipong@mail2 ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                                              
+Queued 'high' requests        0                                                              
+Queued 'low' requests         0                                                              
+Queued 'failed' requests      0                                                              
+Queued 'full resync' requests 1113                                                           
+Waiting 'failed' requests     0                                                              
+Total number of known users   5158 
+[root@mail2 log]# sudo doveadm replicator status
+Queued 'sync' requests        0                                                                                                             
+Queued 'high' requests        0                                                                                                             
+Queued 'low' requests         0                                                                                                             
+Queued 'failed' requests      1                                                                                                             
+Queued 'full resync' requests 1351                                                                                                          
+Waiting 'failed' requests     0                                                                                                             
+Total number of known users   5159 
+
+[titipong@mail ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                              
+Queued 'high' requests        0                                              
+Queued 'low' requests         0                                              
+Queued 'failed' requests      0                                              
+Queued 'full resync' requests 2784                                           
+Waiting 'failed' requests     399                                            
+Total number of known users   5153                                           
+[titipong@mail ~]$ 
+[titipong@mail ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                              
+Queued 'high' requests        0                                              
+Queued 'low' requests         0                                              
+Queued 'failed' requests      0                                              
+Queued 'full resync' requests 2683                                           
+Waiting 'failed' requests     399                                            
+Total number of known users   5153
+[titipong@mail ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                              
+Queued 'high' requests        0                                              
+Queued 'low' requests         0                                              
+Queued 'failed' requests      0                                              
+Queued 'full resync' requests 2582                                           
+Waiting 'failed' requests     398                                            
+Total number of known users   5153 
+[titipong@mail ~]$ sudo doveadm replicator status
+Queued 'sync' requests        0                                              
+Queued 'high' requests        0                                              
+Queued 'low' requests         0                                              
+Queued 'failed' requests      0                                              
+Queued 'full resync' requests 2091                                           
+Waiting 'failed' requests     50                                             
+Total number of known users   5153  

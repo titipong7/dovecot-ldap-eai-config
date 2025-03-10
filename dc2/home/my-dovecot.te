@@ -1,0 +1,13 @@
+
+module my-dovecot 1.0;
+
+require {
+	type dovecot_t;
+	type unreserved_port_t;
+	class tcp_socket name_bind;
+}
+
+#============= dovecot_t ==============
+
+#!!!! This avc is allowed in the current policy
+allow dovecot_t unreserved_port_t:tcp_socket name_bind;

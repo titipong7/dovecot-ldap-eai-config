@@ -1,0 +1,190 @@
+protocols = imap sieve
+mail_home = /home/vmail/%d/%n/Maildir/seive
+mail_location = maildir:/home/vmail/%d/%n/Maildir
+#auth_verbose = yes 
+#auth_debug = yes 
+auth_username_chars = 
+
+mail_plugins = quota notify replication
+
+ssl = yes
+#verbose_ssl = yes
+
+disable_plaintext_auth = no
+#ssl_cert = </etc/letsencrypt/live/mail.kon.in.th/fullchain.pem
+#ssl_key = </etc/letsencrypt/live/mail.kon.in.th/privkey.pem
+#ssl_cert = </etc/pki/dovecot/certs/kon.in.th.pem
+#ssl_key = </etc/pki/dovecot/private/kon.in.th.pem
+
+#ssl_ca = </etc/pki/dovecot/certs/STAR_kon_in_th.ca-bundle
+
+ssl_verify_client_cert = yes
+#ssl_cert = </etc/pki/dovecot/certs/STAR_kon_in_th.crt
+#ssl_key = </etc/pki/dovecot/private/STAR_kon_in_th.key
+
+ssl_ca = </etc/ssl/certs/STAR_kon_in_th.ca-bundle
+
+ssl_verify_client_cert = yes
+ssl_cert = </etc/ssl/certs/STAR_kon_in_th.crt
+ssl_key = </etc/ssl/certs/STAR_kon_in_th.key
+
+namespace inbox {
+  type = private
+  separator = /
+  prefix =
+  inbox = yes
+}
+
+namespace inbox {
+  mailbox Drafts {
+    auto = subscribe
+    special_use = \Drafts
+  }
+  mailbox Junk {
+   auto = subscribe
+   special_use = \Junk
+ }
+ mailbox Trash {
+   auto = subscribe
+   special_use = \Trash
+ }
+ mailbox Sent {
+   auto = subscribe
+   special_use = \Sent
+ }
+}
+
+service imap-login {
+#  inet_listener imap {
+#    port = 143
+#  }
+  process_limit = 200
+  inet_listener imaps {
+    port = 993
+    ssl = yes
+  }
+}
+
+protocol lda {
+  mail_plugins = sieve
+}
+
+protocol lda {
+    log_path = /home/vmail/dovecot-deliver.log
+    auth_socket_path = /var/run/dovecot/auth-master
+    postmaster_address = postmaster@kon.in.th
+}
+
+service auth {
+    unix_listener auth-master {
+        mode = 0600
+        user = vmail
+    }
+
+    unix_listener /var/spool/postfix/private/auth {
+        mode = 0666
+        user = postfix
+        group = postfix
+    }
+
+user = root
+}
+
+service stats {
+    unix_listener stats-reader {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+
+    unix_listener stats-writer {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+}
+
+
+auth_mechanisms = plain login
+
+service auth-worker {
+    user = vmail
+}
+
+passdb {
+    driver = ldap
+    args = /etc/dovecot/dovecot-ldap.conf.ext
+}
+
+userdb {
+    default_fields = uid=vmail gid=vmail home=/home/vmail/%d/%n
+    args = /etc/dovecot/dovecot-ldap.conf.ext
+    driver = ldap		
+}
+
+###replicate
+
+service replicator {
+  process_min_avail = 1
+}
+
+#dsync_remote_cmd = ssh -p 11022 -l%{login} %{host} doveadm dsync-server -u%u
+#dsync_remote_cmd = ssh -p 11022 -i /home/vmail/.ssh/tanagan-private-key-ssh-nopass.pem %{host} /usr/bin/dsync-in-wrapper.sh
+dsync_remote_cmd = ssh -p 11022 -i /home/vmail/.ssh/tanagan-private-key-ssh-nopass.pem %{host} doveadm dsync-server -u%u
+
+plugin {
+#  mail_replica = remoteprefix:vmail@10.1.2.232
+  mail_replica = remote:vmail@10.1.2.232
+}
+
+service aggregator {
+  fifo_listener replication-notify-fifo {
+    user = vmail
+##    group = vmail
+##    mode = 0660
+  }
+  unix_listener replication-notify {
+    user = vmail
+##    group = vmail
+##    mode = 0660
+  }
+}
+
+service replicator {
+  unix_listener replicator-doveadm {
+    mode = 0600
+    user = vmail 
+  }
+}
+
+replication_max_conns = 500
+
+
+service doveadm {
+  inet_listener {
+    port = 12345
+  }
+}
+
+doveadm_port = 12345
+
+doveadm_password = ThaiNSServer
+
+plugin {
+  mail_replica = tcp:10.1.2.232:12345
+}
+
+
+
+###mail quota
+protocol imap {
+  mail_plugins = $mail_plugins imap_quota
+}
+plugin {
+      quota = maildir:User quota
+    # We add 100Mb more for Trash
+      quota_rule = Trash:storage=+100M
+    # We set up warnings at 75% and 90%
+      quota_warning = storage=75%% /opt/mail.sh 75 %u
+      quota_warning2 = storage=90%% /opt/mail.sh 90 %u
+    }

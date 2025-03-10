@@ -1,0 +1,164 @@
+protocols = imap
+mail_location = maildir:/home/vmail/%d/%n/Maildir
+auth_verbose = yes
+auth_debug = yes
+
+ssl = yes
+disable_plaintext_auth = yes
+ssl_cert = </etc/letsencrypt/live/mail.kon.in.th/fullchain.pem
+ssl_key = </etc/letsencrypt/live/mail.kon.in.th/privkey.pem
+
+namespace inbox {
+  type = private
+  separator = /
+  prefix =
+  inbox = yes
+}
+
+namespace inbox {
+  mailbox Drafts {
+    auto = subscribe
+    special_use = \Drafts
+  }
+  mailbox Junk {
+   auto = subscribe
+   special_use = \Junk
+ }
+ mailbox Trash {
+   auto = subscribe
+   special_use = \Trash
+ }
+ mailbox Sent {
+   auto = subscribe
+   special_use = \Sent
+ }
+}
+
+service imap-login {
+  inet_listener imap {
+    port = 143
+  }
+  inet_listener imaps {
+    port = 993
+    ssl = yes
+  }
+}
+
+protocol lda {
+    log_path = /home/vmail/dovecot-deliver.log
+    auth_socket_path = /var/run/dovecot/auth-master
+    postmaster_address = postmaster@kon.in.th
+}
+
+service auth {
+    unix_listener auth-master {
+        mode = 0600
+        user = vmail
+    }
+
+    unix_listener /var/spool/postfix/private/auth {
+        mode = 0666
+        user = postfix
+        group = postfix
+    }
+
+user = root
+}
+
+service stats {
+    unix_listener stats-reader {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+
+    unix_listener stats-writer {
+        user = vmail
+        group = vmail
+        mode = 0660
+    }
+}
+
+
+auth_mechanisms = plain login
+
+service auth-worker {
+    user = vmail
+}
+
+
+passdb {
+    driver = ldap
+    args = /etc/dovecot/dovecot-ldap.conf.ext
+}
+
+
+userdb {
+    default_fields = uid=vmail gid=vmail home=/home/vmail/%d/%n
+    args = /etc/dovecot/dovecot-ldap.conf.ext
+    driver = ldap		
+}
+
+###replicate
+#mail_plugins = $mail_plugins notify replication
+
+service replicator {
+  process_min_avail = 1
+}
+
+dsync_remote_cmd = ssh -l%{login} %{host} doveadm dsync-server -u%u
+plugin {
+  mail_replica = remote:vmail@10.1.1.227
+}
+
+service aggregator {
+  fifo_listener replication-notify-fifo {
+    user = vmail
+    group = vmail
+    mode = 0660
+  }
+  unix_listener replication-notify {
+    user = vmail
+    group = vmail
+    mode = 0660
+  }
+}
+
+service replicator {
+  unix_listener replicator-doveadm {
+    mode = 0600
+    user = vmail 
+  }
+}
+
+replication_max_conns = 20
+
+service doveadm {
+  inet_listener {
+    port = 12345
+  }
+}
+
+doveadm_port = 12345
+
+doveadm_password = ThaiNSServer
+
+plugin {
+  mail_replica = tcp:10.1.1.227:12345 
+}
+
+###test mail quota
+mail_plugins = quota notify replication
+protocol imap {
+  mail_plugins = $mail_plugins imap_quota
+}
+plugin {
+       quota = maildir:User quota
+    # Quota limit is 4GB
+    # quota_rule = *:storage=2G
+    # We add 100Mb more for Trash
+      quota_rule = Trash:storage=+100M
+    # We set up warnings at 75% and 90%
+      quota_warning = storage=75%% /opt/mail.sh 75 %u
+      quota_warning2 = storage=90%% /opt/mail.sh 90 %u
+    }
